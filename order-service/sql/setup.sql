@@ -1,9 +1,11 @@
 CREATE DATABASE Market;
 USE Market;
 
-CREATE TABLE Product (
-    product_name VARCHAR(50),
-    product_price INT,
-    product_inventory INT,
-    product_id INT
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT,
+    quantity INT,
+    total_price DECIMAL(10, 2),
+    status VARCHAR(20),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
