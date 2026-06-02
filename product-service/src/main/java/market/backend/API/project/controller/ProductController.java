@@ -1,5 +1,6 @@
 package market.backend.API.project.controller;
 
+import market.backend.API.project.common.Result;
 import market.backend.API.project.entity.Product;
 import market.backend.API.project.service.ProductService;
 import jakarta.validation.Valid;
@@ -19,34 +20,34 @@ public class ProductController {
     private ProductService service;
 
     @GetMapping
-    public List<Product> getAllProducts() { return service.getAllProducts(); }
+    public Result<List<Product>> getAllProducts() { return Result.success(service.getAllProducts()); }
 
     @GetMapping("/{id}")
-    public Product getProductById(@PathVariable int id) { return service.getProductById(id); }
+    public Result<Product> getProductById(@PathVariable int id) { return Result.success(service.getProductById(id)); }
 
     @PostMapping
-    public String addProduct(@Valid @RequestBody Product product) {
+    public Result<String> addProduct(@Valid @RequestBody Product product) {
         service.addProduct(product);
-        return "Product added";
+        return Result.success("Product added");
     }
 
     @PutMapping
-    public String updateProduct(@RequestBody Product product) {
+    public Result<String> updateProduct(@RequestBody Product product) {
         service.updateProduct(product);
-        return "Product updated";
+        return Result.success("Product updated");
     }
 
     @DeleteMapping("/{id}")
-    public String deleteProduct(@PathVariable int id) {
+    public Result<String> deleteProduct(@PathVariable int id) {
         service.deleteProduct(id);
-        return "Product deleted";
+        return Result.success("Product deleted");
     }
 
     @Value("${product.welcome:default value}")
     private String welcomeMessage;
 
     @GetMapping("/welcome")
-    public String welcome() {
-        return welcomeMessage;
+    public Result<String> welcome() {
+        return Result.success(welcomeMessage);
     }
 }
