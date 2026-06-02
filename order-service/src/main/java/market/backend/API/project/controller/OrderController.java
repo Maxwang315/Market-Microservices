@@ -1,5 +1,6 @@
 package market.backend.API.project.controller;
 
+import market.backend.API.project.common.Result;
 import market.backend.API.project.entity.Order;
 import market.backend.API.project.entity.ProductDTO;
 import market.backend.API.project.service.OrderService;
@@ -20,39 +21,37 @@ public class OrderController {
     private OrderService service;
 
     @GetMapping
-    public List<Order> getAllOrders() { return service.getAllOrders(); }
+    public Result<List<Order>> getAllOrders() { return Result.success(service.getAllOrders()); }
 
     @GetMapping("/{id}")
-    public Order getOrderById(@PathVariable int id) { return service.getOrderById(id); }
+    public Result<Order> getOrderById(@PathVariable int id) { return Result.success(service.getOrderById(id)); }
 
     @PostMapping
-    public String addOrder(@Valid @RequestBody Order order) {
+    public Result<String> addOrder(@Valid @RequestBody Order order) {
         service.addOrder(order);
-        return "Order added";
+        return Result.success("Order added");
     }
 
     @PutMapping
-    public String updateOrder(@RequestBody Order order) {
+    public Result<String> updateOrder(@RequestBody Order order) {
         service.updateOrder(order);
-        return "Order updated";
+        return Result.success("Order updated");
     }
 
     @DeleteMapping("/{id}")
-    public String deleteOrder(@PathVariable int id) {
+    public Result<String> deleteOrder(@PathVariable int id) {
         service.deleteOrder(id);
-        return "Order deleted";
+        return Result.success("Order deleted");
     }
 
     @Value("${order.welcome:default value}")
     private String welcomeMessage;
 
     @GetMapping("/welcome")
-    public String welcome() {
-        return welcomeMessage;
-    }
+    public Result<String> welcome() { return Result.success(welcomeMessage); }
 
     @GetMapping("/product/{productId}")
-    public ProductDTO getProduct(@PathVariable int productId) {
-        return service.getProductForOrder(productId);
+    public Result<ProductDTO> getProduct(@PathVariable int productId) {
+        return Result.success(service.getProductForOrder(productId));
     }
 }
