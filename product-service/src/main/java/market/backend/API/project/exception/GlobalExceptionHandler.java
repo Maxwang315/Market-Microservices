@@ -1,35 +1,32 @@
 package market.backend.API.project.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.validation.BindingResult;
+import market.backend.API.project.common.Result;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleValidationError(MethodArgumentNotValidException ex) {
-        BindingResult bindingResult = ex.getBindingResult();
-        String errorMessage = bindingResult.getFieldErrors().get(0).getDefaultMessage();
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 400);
-        response.put("message", errorMessage);
-        return response;
+    public Result<String> handleValidationException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors()
+                .stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        return Result.error(400, message);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public Result<String> handleRuntimeException(RuntimeException e) {
+        return Result.error(500, e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, Object> handleGeneralError(Exception ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 500);
-        response.put("message", ex.getMessage());
-        return response;
+    public Result<String> handleException(Exception e) {
+        return Result.error(500, "Internal server error: " + e.getMessage());
     }
 }
