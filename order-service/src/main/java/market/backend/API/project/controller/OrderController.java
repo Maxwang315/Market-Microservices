@@ -1,6 +1,7 @@
 package market.backend.API.project.controller;
 
 import market.backend.API.project.entity.Order;
+import market.backend.API.project.entity.ProductDTO;
 import market.backend.API.project.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,5 +49,10 @@ public class OrderController {
     @GetMapping("/welcome")
     public String welcome() {
         return welcomeMessage;
+    }
+
+    @GetMapping("/product/{productId}")
+    public ProductDTO getProduct(@PathVariable int productId) {
+        return service.getProductForOrder(productId);
     }
 }
