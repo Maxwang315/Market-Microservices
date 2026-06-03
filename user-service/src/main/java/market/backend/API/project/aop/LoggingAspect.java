@@ -13,7 +13,7 @@ import java.util.Arrays;
 public class LoggingAspect {
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
 
-    @Around("Execution(* market.backend.API.project.service.*.*(..))")
+    @Around("execution(* market.backend.API.project.service.*.*(..))")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
         String methodName = joinPoint.getSignature().getName();
         logger.info(">>> {} called with args: {}", methodName, Arrays.toString(joinPoint.getArgs()));
