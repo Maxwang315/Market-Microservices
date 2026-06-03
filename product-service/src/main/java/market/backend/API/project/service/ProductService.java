@@ -6,6 +6,8 @@ import market.backend.API.project.mapper.ProductMapper;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +19,7 @@ public class ProductService {
     @Autowired
     private ProductMapper mapper;
 
+    @Cacheable(value = "product", key = "#id")
     public Product getProductById(int id) {
         return mapper.selectById(id);
     }
@@ -56,10 +59,12 @@ public class ProductService {
         }
     }
 
+    @CacheEvict(value = "product", key = "#product.productId")
     public void updateProduct(Product product) {
         mapper.updateById(product);
     }
 
+    @CacheEvict(value = "product", key = "#id")
     public void deleteProduct(int id) {
         mapper.deleteById(id);
     }
