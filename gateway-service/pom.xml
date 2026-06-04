@@ -61,6 +61,12 @@
             <artifactId>lombok</artifactId>
             <version>1.18.32</version>
         </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
+            <version>4.1.109.Final</version>
+            <classifier>osx-aarch64</classifier>
+        </dependency>
     </dependencies>
 
     <build>

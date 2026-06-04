@@ -1,5 +1,7 @@
 package market.backend.API.project.service;
 
+import market.backend.API.project.common.Result;
+import market.backend.API.project.feign.UserClient;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,16 @@ public class FavouriteService {
     @Autowired
     private RedissonClient redissonClient;
 
+    @Autowired
+    private UserClient userClient;
+
     public String addFavourite(int userId, int productId) {
+        //validate user exists
+        Result<Object> userResult = userClient.getUserById(userId);
+        if (userResult == null || userResult.getData() == null) {
+            throw new RuntimeException("User not found!!");
+        }
+
         String lockKey = "lock:favourite:" + userId + ":" + productId;
         RLock lock = redissonClient.getLock(lockKey);
 
@@ -54,7 +65,7 @@ public class FavouriteService {
     }
 
     public Set<Object> getUserFavourites(int userId) {
-        return redisTemplate.opsForSet().members("favourites:user:" + userId);
+        return redisTemplate.opsForSet().members("favourite:user:" + userId);
     }
 
     public long getProductFavouriteCount(int productId) {
