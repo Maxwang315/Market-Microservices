@@ -2,6 +2,7 @@ package market.backend.API.project.service;
 
 import market.backend.API.project.entity.User;
 import market.backend.API.project.mapper.UserMapper;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class UserService {
 
     @Autowired
     private RedissonClient redissonClient;
+
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
 
     public List<User> getAllUsers() {
         return mapper.selectList(null);
@@ -69,6 +73,10 @@ public class UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setIsActive(true);
         mapper.insert(user);
+
+        //send welcome email message after registration
+        String message = "Welcome to Market! " + user.getEmail();
+        rocketMQTemplate.convertAndSend("user-register-topic", message);
     }
 
     public void updateUser(User user) {
