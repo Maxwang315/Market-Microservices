@@ -1,9 +1,11 @@
 package market.backend.API.project.service;
 
+import market.backend.API.project.OrderCreatedMessage;
 import market.backend.API.project.entity.Order;
 import market.backend.API.project.entity.ProductDTO;
 import market.backend.API.project.feign.ProductClient;
 import market.backend.API.project.mapper.OrderMapper;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,9 @@ public class OrderService {
     @Autowired
     private OrderMapper mapper;
 
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
+
     public Order getOrderById(int id) {
         return mapper.selectById(id);
     }
@@ -25,6 +30,11 @@ public class OrderService {
 
     public void addOrder(Order order) {
         mapper.insert(order);
+         OrderCreatedMessage message = new OrderCreatedMessage(
+                 order.getProductId(),
+                 order.getQuantity()
+         );
+         rocketMQTemplate.syncSend("order-topic", message);
     }
 
     public void updateOrder(Order order) {

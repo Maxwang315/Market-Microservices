@@ -115,4 +115,18 @@ public class ProductService {
     public void deleteProduct(int id) {
         mapper.deleteById(id);
     }
+
+    public void decreaseInventory(int productId, int quantity) {
+        Product product = mapper.selectById(productId);
+        if (product == null) {
+            throw new RuntimeException("Product not found: " + productId);
+        }
+        if (product.getProductInventory() < quantity) {
+            throw new RuntimeException("Insufficient inventory for product: " + productId);
+        }
+        product.setProductInventory(product.getProductInventory() - quantity);
+        mapper.updateById(product);
+        redisTemplate.delete("product:" + productId);
+        System.out.println("✅ Inventory decreased for product " + productId + " by " + quantity);
+    }
 }

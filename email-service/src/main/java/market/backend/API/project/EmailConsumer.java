@@ -6,6 +6,7 @@ import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.redis.core.RedisTemplate;
+import market.backend.API.project.UserRegisterMessage;
 
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +20,9 @@ public class EmailConsumer implements RocketMQListener<MessageExt> {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
+    @Autowired
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
     @Override
     public void onMessage(MessageExt message) {
         String messageId = message.getMsgId();
@@ -31,8 +35,16 @@ public class EmailConsumer implements RocketMQListener<MessageExt> {
         }
 
         //process the message
-        String body =  new String(message.getBody());
-        System.out.println("📧 Sending email: " + body);
+        try {
+            String body = new String(message.getBody());
+            UserRegisterMessage registerMessage = objectMapper.readValue(body, UserRegisterMessage.class);
+            System.out.println("📧 Sending welcome email to: " + registerMessage.getEmail());
+            System.out.println("👤 Username: " + registerMessage.getUsername());
+            System.out.println("👤 UserId: " + registerMessage.getUserId());
+        } catch (Exception e) {
+            System.out.println("❌ Failed to parse message: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
 
         //mark as processed in Redis, keep for 24 hours
         redisTemplate.opsForValue().set(redisKey, "1", 24, TimeUnit.HOURS);

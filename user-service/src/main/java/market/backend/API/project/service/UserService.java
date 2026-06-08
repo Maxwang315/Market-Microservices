@@ -1,5 +1,6 @@
 package market.backend.API.project.service;
 
+import market.backend.API.project.UserRegisterMessage;
 import market.backend.API.project.entity.User;
 import market.backend.API.project.mapper.UserMapper;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
@@ -75,8 +76,12 @@ public class UserService {
         mapper.insert(user);
 
         //send welcome email message after registration
-        String message = "Welcome to Market! " + user.getEmail();
-        rocketMQTemplate.convertAndSend("user-register-topic", message);
+        UserRegisterMessage message = new UserRegisterMessage(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail()
+        );
+        rocketMQTemplate.syncSend("user-register-topic", message);
     }
 
     public void updateUser(User user) {
