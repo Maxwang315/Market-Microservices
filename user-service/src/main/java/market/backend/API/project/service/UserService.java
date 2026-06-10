@@ -3,11 +3,13 @@ package market.backend.API.project.service;
 import market.backend.API.project.UserRegisterMessage;
 import market.backend.API.project.entity.User;
 import market.backend.API.project.mapper.UserMapper;
+import market.backend.API.project.utils.JwtUtils;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,12 @@ public class UserService {
 
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<User> getAllUsers() {
         return mapper.selectList(null);
@@ -73,15 +81,31 @@ public class UserService {
     public void addUser(User user) {
         user.setCreatedAt(LocalDateTime.now());
         user.setIsActive(true);
+        user.setPassword(passwordEncoder.encode(user.getPassword())); // hash password
         mapper.insert(user);
 
-        //send welcome email message after registration
-        UserRegisterMessage message = new UserRegisterMessage(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail()
-        );
-        rocketMQTemplate.syncSend("user-register-topic", message);
+        try {
+            //send welcome email message after registration
+            UserRegisterMessage message = new UserRegisterMessage(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail()
+            );
+            rocketMQTemplate.syncSend("user-register-topic", message);
+        } catch (Exception e) {
+            System.out.println("⚠️ RocketMQ not available, skipping welcome email");
+        }
+
+    }
+
+    public String login(String username, String password) {
+        User user = mapper.selectOne(
+                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<User>()
+                        .eq("username", username));
+        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid username or password");
+        }
+        return jwtUtils.generateToken(username);
     }
 
     public void updateUser(User user) {

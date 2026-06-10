@@ -31,4 +31,5 @@ public class User {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime createdAt;
     private String idolGroup;
+    private String password;
 }

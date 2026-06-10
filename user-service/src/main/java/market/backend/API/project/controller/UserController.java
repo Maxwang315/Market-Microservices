@@ -1,6 +1,7 @@
 package market.backend.API.project.controller;
 
 import market.backend.API.project.common.Result;
+import market.backend.API.project.dto.LoginRequest;
 import market.backend.API.project.entity.User;
 import market.backend.API.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,12 @@ public class UserController {
     public Result<String> addUser(@RequestBody User user) {
         userService.addUser(user);
         return Result.success("User added");
+    }
+
+    @PostMapping("/login")
+    public Result<String> login(@RequestBody LoginRequest request) {
+        String token = userService.login(request.getUsername(), request.getPassword());
+        return Result.success(token);
     }
 
     @PutMapping
